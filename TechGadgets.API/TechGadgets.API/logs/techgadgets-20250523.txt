@@ -1,0 +1,66 @@
+2025-05-23 12:04:52.575 -05:00 [INF] Executed DbCommand (147ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2025-05-23 12:04:52.715 -05:00 [INF] ✅ Conexión a base de datos exitosa
+2025-05-23 12:04:52.730 -05:00 [INF] 🚀 TechGadgets API iniciada correctamente
+2025-05-23 12:04:52.737 -05:00 [INF] 📚 Documentación disponible en: /swagger
+2025-05-23 12:04:52.775 -05:00 [INF] User profile is available. Using 'C:\Users\57315\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-05-23 12:04:53.108 -05:00 [INF] Now listening on: http://localhost:5260
+2025-05-23 12:04:53.119 -05:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-05-23 12:04:53.123 -05:00 [INF] Hosting environment: Development
+2025-05-23 12:04:53.125 -05:00 [INF] Content root path: C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API
+2025-05-23 12:04:54.293 -05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5260/swagger/index.html - null null
+2025-05-23 12:04:54.696 -05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5260/swagger/index.html - 200 null text/html;charset=utf-8 406.4791ms
+2025-05-23 12:04:55.918 -05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5260/swagger/v1/swagger.json - null null
+2025-05-23 12:04:57.357 -05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5260/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 1439.0162ms
+2025-05-23 12:04:59.615 -05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5260/swagger/index.html - null null
+2025-05-23 12:04:59.630 -05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5260/swagger/index.html - 200 null text/html;charset=utf-8 11.7736ms
+2025-05-23 12:04:59.939 -05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5260/swagger/v1/swagger.json - null null
+2025-05-23 12:05:00.039 -05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5260/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 99.5259ms
+2025-05-23 12:05:02.824 -05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5260/ - null null
+2025-05-23 12:05:02.842 -05:00 [WRN] Failed to determine the https port for redirect.
+2025-05-23 12:05:02.998 -05:00 [INF] Executing endpoint 'HTTP: GET /'
+2025-05-23 12:05:03.016 -05:00 [INF] Executed endpoint 'HTTP: GET /'
+2025-05-23 12:05:03.022 -05:00 [INF] HTTP GET / responded 200 in 25.3095 ms
+2025-05-23 12:05:03.030 -05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5260/ - 200 null application/json; charset=utf-8 206.1769ms
+2025-05-23 12:05:03.315 -05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5260/favicon.ico - null null
+2025-05-23 12:05:03.324 -05:00 [INF] HTTP GET /favicon.ico responded 404 in 0.2147 ms
+2025-05-23 12:05:03.335 -05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5260/favicon.ico - 404 0 null 20.1848ms
+2025-05-23 12:05:03.349 -05:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5260/favicon.ico, Response status code: 404
+2025-05-23 12:05:12.346 -05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5260/swagger/index.html - null null
+2025-05-23 12:05:12.352 -05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5260/swagger/index.html - 200 null text/html;charset=utf-8 5.7345ms
+2025-05-23 12:05:12.467 -05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5260/swagger/v1/swagger.json - null null
+2025-05-23 12:05:12.498 -05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5260/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 31.058ms
+2025-05-23 12:06:09.780 -05:00 [INF] Application is shutting down...
+2025-05-23 12:06:21.510 -05:00 [INF] Executed DbCommand (124ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2025-05-23 12:06:21.582 -05:00 [INF] ✅ Conexión a base de datos exitosa
+2025-05-23 12:06:21.587 -05:00 [INF] 🚀 TechGadgets API iniciada correctamente
+2025-05-23 12:06:21.589 -05:00 [INF] 📚 Documentación disponible en: /swagger
+2025-05-23 12:06:21.605 -05:00 [INF] User profile is available. Using 'C:\Users\57315\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2025-05-23 12:06:21.762 -05:00 [INF] Now listening on: http://localhost:5260
+2025-05-23 12:06:21.768 -05:00 [INF] Application started. Press Ctrl+C to shut down.
+2025-05-23 12:06:21.772 -05:00 [INF] Hosting environment: Development
+2025-05-23 12:06:21.773 -05:00 [INF] Content root path: C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API
+2025-05-23 12:06:36.683 -05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5260/ - null null
+2025-05-23 12:06:36.742 -05:00 [WRN] Failed to determine the https port for redirect.
+2025-05-23 12:06:36.809 -05:00 [INF] Executing endpoint 'HTTP: GET /'
+2025-05-23 12:06:36.829 -05:00 [INF] Executed endpoint 'HTTP: GET /'
+2025-05-23 12:06:36.833 -05:00 [INF] HTTP GET / responded 200 in 25.1031 ms
+2025-05-23 12:06:36.837 -05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5260/ - 200 null application/json; charset=utf-8 156.9107ms
+2025-05-23 12:06:37.203 -05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5260/favicon.ico - null null
+2025-05-23 12:06:37.216 -05:00 [INF] HTTP GET /favicon.ico responded 404 in 0.1817 ms
+2025-05-23 12:06:37.219 -05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5260/favicon.ico - 404 0 null 16.6901ms
+2025-05-23 12:06:37.232 -05:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5260/favicon.ico, Response status code: 404
+2025-05-23 12:06:46.739 -05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5260/swagger/index.html - null null
+2025-05-23 12:06:46.799 -05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5260/swagger/index.html - 200 null text/html;charset=utf-8 59.7498ms
+2025-05-23 12:06:47.088 -05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5260/swagger/v1/swagger.json - null null
+2025-05-23 12:06:47.230 -05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5260/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 142.4109ms
+2025-05-23 12:06:57.987 -05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5260/swagger/index.html - null null
+2025-05-23 12:06:57.992 -05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5260/swagger/index.html - 200 null text/html;charset=utf-8 5.139ms
+2025-05-23 12:06:58.097 -05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5260/swagger/v1/swagger.json - null null
+2025-05-23 12:06:58.119 -05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5260/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 21.9728ms
+2025-05-23 12:07:19.717 -05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5260/swagger/index.html - null null
+2025-05-23 12:07:19.729 -05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5260/swagger/index.html - 200 null text/html;charset=utf-8 11.9664ms
+2025-05-23 12:07:19.929 -05:00 [INF] Request starting HTTP/1.1 GET http://localhost:5260/swagger/v1/swagger.json - null null
+2025-05-23 12:07:19.984 -05:00 [INF] Request finished HTTP/1.1 GET http://localhost:5260/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 55.3638ms
+2025-05-23 12:09:19.664 -05:00 [INF] Application is shutting down...
