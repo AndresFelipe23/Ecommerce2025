@@ -12,5 +12,7 @@ namespace TechGadgets.API.Dtos.Products
         public int TotalResultados { get; set; }
         public int Pagina { get; set; }
         public int TotalPaginas { get; set; }
+        public string? TerminoBusqueda { get; set; }
+        public AppliedFiltersDto FiltrosAplicados { get; set; } = new();
     }
 }

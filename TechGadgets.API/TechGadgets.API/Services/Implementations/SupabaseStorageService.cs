@@ -36,16 +36,19 @@ namespace TechGadgets.API.Services.Implementations
         }
 
         /// <summary>
-        /// Sube una imagen individual a Supabase Storage
+        /// Sube una imagen individual a Supabase Storage con carpeta específica para el producto
         /// </summary>
         public async Task<ImageUploadResponseDto> UploadImageAsync(IFormFile file, string? altText = null, string? folder = null)
         {
             try
             {
+                _logger.LogInformation("🔄 Iniciando subida de imagen: {FileName}", file.FileName);
+
                 // ✅ VALIDACIONES BÁSICAS
                 var validation = ValidateFile(file);
                 if (!validation.IsValid)
                 {
+                    _logger.LogWarning("❌ Validación fallida para {FileName}: {Error}", file.FileName, validation.ErrorMessage);
                     return new ImageUploadResponseDto
                     {
                         Success = false,
@@ -53,14 +56,16 @@ namespace TechGadgets.API.Services.Implementations
                     };
                 }
 
-                // ✅ GENERAR NOMBRE ÚNICO
+                // ✅ GENERAR NOMBRE ÚNICO Y RUTA
                 var fileName = GenerateUniqueFileName(file.FileName);
-                var filePath = string.IsNullOrEmpty(folder) 
-                    ? $"products/{fileName}" 
-                    : $"products/{folder}/{fileName}";
+                var filePath = GenerateFilePath(fileName, folder);
 
-                // ✅ PROCESAR IMAGEN (COMPRESIÓN)
+                _logger.LogInformation("📁 Ruta generada: {FilePath}", filePath);
+
+                // ✅ PROCESAR IMAGEN (COMPRESIÓN Y REDIMENSIONAMIENTO)
                 var processedImageData = await ProcessImageAsync(file);
+                _logger.LogInformation("🖼️ Imagen procesada. Tamaño original: {OriginalSize} bytes, Tamaño procesado: {ProcessedSize} bytes", 
+                    file.Length, processedImageData.Length);
 
                 // ✅ SUBIR A SUPABASE
                 var uploadResult = await _supabaseClient.Storage
@@ -73,10 +78,11 @@ namespace TechGadgets.API.Services.Implementations
 
                 if (uploadResult == null)
                 {
+                    _logger.LogError("❌ Error al subir imagen a Supabase: {FileName}", file.FileName);
                     return new ImageUploadResponseDto
                     {
                         Success = false,
-                        Error = "Error al subir imagen a Supabase"
+                        Error = "Error al subir imagen a Supabase Storage"
                     };
                 }
 
@@ -85,11 +91,15 @@ namespace TechGadgets.API.Services.Implementations
                     .From(_settings.Storage.BucketName)
                     .GetPublicUrl(filePath);
 
+                _logger.LogInformation("🌐 URL pública generada: {PublicUrl}", publicUrl);
+
                 // ✅ GENERAR THUMBNAILS SI ESTÁ HABILITADO
                 List<ThumbnailDto>? thumbnails = null;
                 if (_settings.Storage.GenerateThumbnails)
                 {
+                    _logger.LogInformation("📸 Generando thumbnails...");
                     thumbnails = await GenerateThumbnailsAsync(file, filePath);
+                    _logger.LogInformation("✅ Thumbnails generados: {Count}", thumbnails?.Count ?? 0);
                 }
 
                 var result = new ImageUploadResponseDto
@@ -102,29 +112,29 @@ namespace TechGadgets.API.Services.Implementations
                         Path = filePath,
                         FileName = fileName,
                         OriginalName = file.FileName,
-                        Size = file.Length,
+                        Size = processedImageData.Length, // Tamaño después del procesamiento
                         ContentType = file.ContentType,
-                        AltText = altText,
+                        AltText = altText ?? $"Imagen de producto - {Path.GetFileNameWithoutExtension(file.FileName)}",
                         Thumbnails = thumbnails
                     }
                 };
 
-                _logger.LogInformation("Imagen subida exitosamente: {FileName} -> {Path}", file.FileName, filePath);
+                _logger.LogInformation("✅ Imagen subida exitosamente: {FileName} -> {Path}", file.FileName, filePath);
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al subir imagen: {FileName}", file.FileName);
+                _logger.LogError(ex, "❌ Error crítico al subir imagen: {FileName}", file.FileName);
                 return new ImageUploadResponseDto
                 {
                     Success = false,
-                    Error = $"Error interno: {ex.Message}"
+                    Error = $"Error interno al subir imagen: {ex.Message}"
                 };
             }
         }
 
-        /// <summary>
-        /// Sube múltiples imágenes
+       /// <summary>
+        /// Sube múltiples imágenes de forma paralela para mejor rendimiento
         /// </summary>
         public async Task<MultipleImageUploadResponseDto> UploadMultipleImagesAsync(IFormFileCollection files, string? folder = null)
         {
@@ -133,19 +143,41 @@ namespace TechGadgets.API.Services.Implementations
                 TotalFiles = files.Count
             };
 
+            if (files.Count == 0)
+            {
+                result.Success = false;
+                result.Message = "No se recibieron archivos para subir";
+                return result;
+            }
+
+            _logger.LogInformation("🔄 Iniciando subida múltiple de {Count} archivos", files.Count);
+
+            // ✅ PROCESAR EN PARALELO CON LÍMITE DE CONCURRENCIA
+            var semaphore = new SemaphoreSlim(3, 3); // Máximo 3 subidas simultáneas
             var uploadTasks = files.Select(async file =>
             {
-                var uploadResult = await UploadImageAsync(file, null, folder);
-                
-                if (uploadResult.Success && uploadResult.Data != null)
+                await semaphore.WaitAsync();
+                try
                 {
-                    result.SuccessfulUploads.Add(uploadResult.Data);
-                    result.SuccessfulCount++;
+                    var uploadResult = await UploadImageAsync(file, null, folder);
+                    
+                    lock (result) // Thread-safe para modificar el resultado
+                    {
+                        if (uploadResult.Success && uploadResult.Data != null)
+                        {
+                            result.SuccessfulUploads.Add(uploadResult.Data);
+                            result.SuccessfulCount++;
+                        }
+                        else
+                        {
+                            result.Errors.Add($"{file.FileName}: {uploadResult.Error}");
+                            result.ErrorCount++;
+                        }
+                    }
                 }
-                else
+                finally
                 {
-                    result.Errors.Add($"{file.FileName}: {uploadResult.Error}");
-                    result.ErrorCount++;
+                    semaphore.Release();
                 }
             });
 
@@ -154,16 +186,26 @@ namespace TechGadgets.API.Services.Implementations
             result.Success = result.SuccessfulCount > 0;
             result.Message = $"{result.SuccessfulCount} de {result.TotalFiles} imágenes subidas exitosamente";
 
+            if (result.ErrorCount > 0)
+            {
+                result.Message += $". {result.ErrorCount} errores encontrados.";
+            }
+
+            _logger.LogInformation("✅ Subida múltiple completada: {Success}/{Total} exitosas", 
+                result.SuccessfulCount, result.TotalFiles);
+
             return result;
         }
 
         /// <summary>
-        /// Elimina una imagen de Supabase Storage
+        /// Elimina una imagen y sus thumbnails de Supabase Storage
         /// </summary>
         public async Task<bool> DeleteImageAsync(string path)
         {
             try
             {
+                _logger.LogInformation("🗑️ Eliminando imagen: {Path}", path);
+
                 var deleteResult = await _supabaseClient.Storage
                     .From(_settings.Storage.BucketName)
                     .Remove(new List<string> { path });
@@ -176,45 +218,64 @@ namespace TechGadgets.API.Services.Implementations
                         await DeleteThumbnailsAsync(path);
                     }
 
-                    _logger.LogInformation("Imagen eliminada: {Path}", path);
+                    _logger.LogInformation("✅ Imagen eliminada exitosamente: {Path}", path);
                     return true;
                 }
 
+                _logger.LogWarning("⚠️ No se pudo eliminar la imagen: {Path}", path);
                 return false;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al eliminar imagen: {Path}", path);
+                _logger.LogError(ex, "❌ Error al eliminar imagen: {Path}", path);
                 return false;
             }
         }
 
+        
         /// <summary>
-        /// Elimina múltiples imágenes
+        /// Elimina múltiples imágenes de forma eficiente
         /// </summary>
         public async Task<bool> DeleteMultipleImagesAsync(List<string> paths)
         {
             try
             {
+                if (!paths.Any())
+                {
+                    _logger.LogWarning("⚠️ Lista de rutas vacía para eliminación múltiple");
+                    return false;
+                }
+
+                _logger.LogInformation("🗑️ Eliminando {Count} imágenes", paths.Count);
+
                 var deleteResult = await _supabaseClient.Storage
                     .From(_settings.Storage.BucketName)
                     .Remove(paths);
 
-                // Eliminar thumbnails
+                // Eliminar thumbnails en paralelo
                 if (_settings.Storage.GenerateThumbnails)
                 {
-                    foreach (var path in paths)
-                    {
-                        await DeleteThumbnailsAsync(path);
-                    }
+                    var deleteThumbnailTasks = paths.Select(DeleteThumbnailsAsync);
+                    await Task.WhenAll(deleteThumbnailTasks);
                 }
 
-                _logger.LogInformation("Imágenes eliminadas: {Count}", paths.Count);
-                return deleteResult?.Count == paths.Count;
+                var success = deleteResult?.Count == paths.Count;
+                
+                if (success)
+                {
+                    _logger.LogInformation("✅ {Count} imágenes eliminadas exitosamente", paths.Count);
+                }
+                else
+                {
+                    _logger.LogWarning("⚠️ Solo se eliminaron {DeletedCount} de {TotalCount} imágenes", 
+                        deleteResult?.Count ?? 0, paths.Count);
+                }
+
+                return success;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al eliminar múltiples imágenes");
+                _logger.LogError(ex, "❌ Error al eliminar múltiples imágenes");
                 return false;
             }
         }
@@ -226,19 +287,27 @@ namespace TechGadgets.API.Services.Implementations
         {
             try
             {
-                return _supabaseClient.Storage
+                if (string.IsNullOrWhiteSpace(path))
+                {
+                    _logger.LogWarning("⚠️ Ruta vacía para obtener URL pública");
+                    return string.Empty;
+                }
+
+                var url = _supabaseClient.Storage
                     .From(_settings.Storage.BucketName)
                     .GetPublicUrl(path);
+
+                return url ?? string.Empty;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener URL pública: {Path}", path);
+                _logger.LogError(ex, "❌ Error al obtener URL pública: {Path}", path);
                 return string.Empty;
             }
         }
 
         /// <summary>
-        /// Lista imágenes en una carpeta
+        /// Lista imágenes en una carpeta específica
         /// </summary>
         public async Task<List<string>> ListImagesAsync(string? folder = null)
         {
@@ -246,37 +315,49 @@ namespace TechGadgets.API.Services.Implementations
             {
                 var path = string.IsNullOrEmpty(folder) ? "products" : $"products/{folder}";
                 
+                _logger.LogInformation("📂 Listando imágenes en: {Path}", path);
+
                 var files = await _supabaseClient.Storage
                     .From(_settings.Storage.BucketName)
                     .List(path);
 
-                return files?.Select(f => f.Name).ToList() ?? new List<string>();
+                var imageNames = files?.Where(f => f.Name != null)
+                                     .Select(f => f.Name!)
+                                     .Where(name => !name.Contains("/thumbnails/")) // Excluir thumbnails del listado
+                                     .ToList() ?? new List<string>();
+
+                _logger.LogInformation("📋 Se encontraron {Count} imágenes en {Path}", imageNames.Count, path);
+                return imageNames;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al listar imágenes en folder: {Folder}", folder);
+                _logger.LogError(ex, "❌ Error al listar imágenes en folder: {Folder}", folder);
                 return new List<string>();
             }
         }
 
         /// <summary>
-        /// Verifica si una imagen existe
+        /// Verifica si una imagen existe en el storage
         /// </summary>
         public async Task<bool> ImageExistsAsync(string path)
         {
             try
             {
-                var directory = Path.GetDirectoryName(path);
+                if (string.IsNullOrWhiteSpace(path))
+                    return false;
+
+                var directory = Path.GetDirectoryName(path)?.Replace("\\", "/") ?? string.Empty;
                 var fileName = Path.GetFileName(path);
                 
                 var files = await _supabaseClient.Storage
                     .From(_settings.Storage.BucketName)
-                    .List(directory ?? string.Empty);
+                    .List(directory);
 
                 return files?.Any(f => f.Name == fileName) ?? false;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "❌ Error al verificar existencia de imagen: {Path}", path);
                 return false;
             }
         }
@@ -289,17 +370,20 @@ namespace TechGadgets.API.Services.Implementations
         private (bool IsValid, string ErrorMessage) ValidateFile(IFormFile file)
         {
             if (file == null || file.Length == 0)
-                return (false, "No se recibió ningún archivo");
+                return (false, "No se recibió ningún archivo o el archivo está vacío");
 
             if (file.Length > _settings.Storage.MaxFileSize)
-                return (false, $"El archivo es demasiado grande. Máximo {_settings.Storage.MaxFileSize / 1024 / 1024}MB");
+            {
+                var maxSizeMB = _settings.Storage.MaxFileSize / 1024.0 / 1024.0;
+                return (false, $"El archivo es demasiado grande. Máximo permitido: {maxSizeMB:F1}MB");
+            }
 
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!_settings.Storage.AllowedExtensions.Contains(extension))
-                return (false, $"Tipo de archivo no permitido. Permitidos: {string.Join(", ", _settings.Storage.AllowedExtensions)}");
+                return (false, $"Tipo de archivo no permitido. Extensiones permitidas: {string.Join(", ", _settings.Storage.AllowedExtensions)}");
 
             if (!file.ContentType.StartsWith("image/"))
-                return (false, "El archivo debe ser una imagen");
+                return (false, "El archivo debe ser una imagen válida");
 
             return (true, string.Empty);
         }
@@ -311,9 +395,28 @@ namespace TechGadgets.API.Services.Implementations
         {
             var extension = Path.GetExtension(originalFileName).ToLowerInvariant();
             var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            var guid = Guid.NewGuid().ToString("N")[..8];
+            var guid = Guid.NewGuid().ToString("N")[..8]; // 8 caracteres del GUID
+            var cleanName = Path.GetFileNameWithoutExtension(originalFileName)
+                .Replace(" ", "-")
+                .Replace("_", "-")
+                .ToLowerInvariant();
             
-            return $"{timestamp}-{guid}{extension}";
+            return $"{timestamp}-{guid}-{cleanName}{extension}";
+        }
+
+        /// <summary>
+        /// Genera la ruta completa del archivo
+        /// </summary>
+        private string GenerateFilePath(string fileName, string? folder = null)
+        {
+            if (string.IsNullOrEmpty(folder))
+            {
+                return $"products/{fileName}";
+            }
+            
+            // Limpiar el nombre de la carpeta
+            var cleanFolder = folder.Replace(" ", "-").Replace("_", "-").ToLowerInvariant();
+            return $"products/{cleanFolder}/{fileName}";
         }
 
         /// <summary>
@@ -321,6 +424,7 @@ namespace TechGadgets.API.Services.Implementations
         /// </summary>
         private async Task<byte[]> ProcessImageAsync(IFormFile file)
         {
+            // Si no está habilitada la compresión, retornar archivo original
             if (!_settings.Storage.CompressImages)
             {
                 using var stream = new MemoryStream();
@@ -344,14 +448,18 @@ namespace TechGadgets.API.Services.Implementations
                 var newHeight = (int)(image.Height * ratio);
 
                 image.Mutate(x => x.Resize(newWidth, newHeight));
+                
+                _logger.LogInformation("🔄 Imagen redimensionada de {OriginalW}x{OriginalH} a {NewW}x{NewH}", 
+                    (int)(newWidth / ratio), (int)(newHeight / ratio), newWidth, newHeight);
             }
 
-            // Comprimir y guardar
+            // Comprimir y guardar como JPEG para mejor compatibilidad
             var encoder = new JpegEncoder { Quality = _settings.Storage.ImageQuality };
             await image.SaveAsync(outputStream, encoder);
 
             return outputStream.ToArray();
         }
+
 
         /// <summary>
         /// Genera thumbnails de diferentes tamaños
@@ -367,47 +475,58 @@ namespace TechGadgets.API.Services.Implementations
 
                 foreach (var size in _settings.Storage.ThumbnailSizes)
                 {
-                    using var thumbnail = image.CloneAs<Rgba32>();
-                    thumbnail.Mutate(x => x.Resize(new ResizeOptions
+                    try
                     {
-                        Size = new Size(size, size),
-                        Sampler = KnownResamplers.Lanczos3
-                    }));
-
-                    using var outputStream = new MemoryStream();
-                    var encoder = new JpegEncoder { Quality = _settings.Storage.ImageQuality };
-                    await thumbnail.SaveAsync(outputStream, encoder);
-
-                    var thumbnailPath = GenerateThumbnailPath(originalPath, size);
-                    
-                    // Subir thumbnail
-                    var uploadResult = await _supabaseClient.Storage
-                        .From(_settings.Storage.BucketName)
-                        .Upload(outputStream.ToArray(), thumbnailPath, new Supabase.Storage.FileOptions
+                        using var thumbnail = image.CloneAs<Rgba32>();
+                        thumbnail.Mutate(x => x.Resize(new ResizeOptions
                         {
-                            CacheControl = "3600",
-                            Upsert = false
-                        });
+                            Size = new Size(size, size),
+                            Mode = ResizeMode.Max, // Mantener proporción
+                            Sampler = KnownResamplers.Lanczos3
+                        }));
 
-                    if (uploadResult != null)
-                    {
-                        var thumbnailUrl = _supabaseClient.Storage
+                        using var outputStream = new MemoryStream();
+                        var encoder = new JpegEncoder { Quality = _settings.Storage.ImageQuality };
+                        await thumbnail.SaveAsync(outputStream, encoder);
+
+                        var thumbnailPath = GenerateThumbnailPath(originalPath, size);
+                        
+                        // Subir thumbnail
+                        var uploadResult = await _supabaseClient.Storage
                             .From(_settings.Storage.BucketName)
-                            .GetPublicUrl(thumbnailPath);
+                            .Upload(outputStream.ToArray(), thumbnailPath, new Supabase.Storage.FileOptions
+                            {
+                                CacheControl = "3600",
+                                Upsert = false
+                            });
 
-                        thumbnails.Add(new ThumbnailDto
+                        if (uploadResult != null)
                         {
-                            Url = thumbnailUrl,
-                            Path = thumbnailPath,
-                            Width = size,
-                            Height = size
-                        });
+                            var thumbnailUrl = _supabaseClient.Storage
+                                .From(_settings.Storage.BucketName)
+                                .GetPublicUrl(thumbnailPath);
+
+                            thumbnails.Add(new ThumbnailDto
+                            {
+                                Url = thumbnailUrl,
+                                Path = thumbnailPath,
+                                Width = thumbnail.Width,
+                                Height = thumbnail.Height,
+                                Size = outputStream.Length
+                            });
+
+                            _logger.LogDebug("📸 Thumbnail {Size}x{Size} creado: {Path}", size, size, thumbnailPath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "⚠️ Error generando thumbnail de tamaño {Size} para: {Path}", size, originalPath);
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Error generando thumbnails para: {Path}", originalPath);
+                _logger.LogError(ex, "❌ Error crítico generando thumbnails para: {Path}", originalPath);
             }
 
             return thumbnails;
@@ -418,7 +537,7 @@ namespace TechGadgets.API.Services.Implementations
         /// </summary>
         private string GenerateThumbnailPath(string originalPath, int size)
         {
-            var directory = Path.GetDirectoryName(originalPath);
+            var directory = Path.GetDirectoryName(originalPath)?.Replace("\\", "/");
             var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(originalPath);
             var extension = Path.GetExtension(originalPath);
 
@@ -441,11 +560,13 @@ namespace TechGadgets.API.Services.Implementations
                     await _supabaseClient.Storage
                         .From(_settings.Storage.BucketName)
                         .Remove(thumbnailPaths);
+
+                    _logger.LogDebug("🗑️ Thumbnails eliminados para: {Path}", originalPath);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Error eliminando thumbnails para: {Path}", originalPath);
+                _logger.LogWarning(ex, "⚠️ Error eliminando thumbnails para: {Path}", originalPath);
             }
         }
 

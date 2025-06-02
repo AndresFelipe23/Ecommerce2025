@@ -11,5 +11,6 @@ namespace TechGadgets.API.Configuration
         public string Path { get; set; } = string.Empty;
         public int Width { get; set; }
         public int Height { get; set; }
+        public long Size { get; set; }
     }
 }

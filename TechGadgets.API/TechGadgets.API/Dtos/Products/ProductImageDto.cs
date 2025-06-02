@@ -12,5 +12,7 @@ namespace TechGadgets.API.Dtos.Products
         public string? AltText { get; set; }
         public bool EsPrincipal { get; set; }
         public int Orden { get; set; }
+        public bool Activo { get; set; }
+
     }
 }

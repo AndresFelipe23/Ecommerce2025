@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
@@ -28,6 +33,8 @@ import CategoryDetail from "./pages/Categorias/CategoryDetail";
 import ProductList from "./pages/Products/ProductList";
 import ProductForm from "./pages/Products/ProductForm";
 import ProductDetail from "./pages/Products/productDetail";
+import ProductImagesPage from "./pages/Products/ProductImagesPage";
+// import ProductImagesManager from "./pages/Products/ProductImagesManager";
 
 // Componente interno que maneja las rutas
 function AppRoutes() {
@@ -39,104 +46,139 @@ function AppRoutes() {
       <Route path="/unauthorized" element={<Unauthorized />} />
 
       {/* Protected Routes with Dashboard Layout */}
-      <Route element={
-        <ProtectedRoute>
-          <SidebarProvider>
-            <AppLayout />
-          </SidebarProvider>
-        </ProtectedRoute>
-      }>
+      <Route
+        element={
+          <ProtectedRoute>
+            <SidebarProvider>
+              <AppLayout />
+            </SidebarProvider>
+          </ProtectedRoute>
+        }
+      >
         {/* Dashboard Home */}
         <Route index path="/" element={<Home />} />
 
         {/* Basic Pages */}
         <Route path="/profile" element={<UserProfiles />} />
-        
+
         <Route path="/blank" element={<Blank />} />
 
         {/* Products Management */}
-        <Route 
-          path="/products" 
+        <Route
+          path="/products"
           element={
             <ProtectedRoute permissions={[PERMISSIONS.PRODUCTS.VIEW]}>
               <ProductList />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route path="/products/create" element={<ProtectedRoute permissions={[PERMISSIONS.PRODUCTS.CREATE]}><ProductForm /></ProtectedRoute>} />
-        <Route path="/products/:id/edit" element={<ProtectedRoute permissions={[PERMISSIONS.PRODUCTS.EDIT]}><ProductForm /></ProtectedRoute>} />
-        <Route path="/products/:id" element={<ProtectedRoute permissions={[PERMISSIONS.PRODUCTS.VIEW]}><ProductDetail /></ProtectedRoute>} />
-
+        <Route
+          path="/products/create"
+          element={
+            <ProtectedRoute permissions={[PERMISSIONS.PRODUCTS.CREATE]}>
+              <ProductForm mode={"create"} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products/:id/edit"
+          element={
+            <ProtectedRoute permissions={[PERMISSIONS.PRODUCTS.EDIT]}>
+              <ProductForm mode={"edit"} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products/:id"
+          element={
+            <ProtectedRoute permissions={[PERMISSIONS.PRODUCTS.VIEW]}>
+              <ProductDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products/:id/imagenes"
+          element={
+            <ProtectedRoute permissions={[PERMISSIONS.PRODUCTS.EDIT]}>
+              <ProductImagesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/products/:id/detalle"
+          element={
+            <ProtectedRoute permissions={[PERMISSIONS.PRODUCTS.VIEW]}>
+              <ProductDetail />
+            </ProtectedRoute>
+          }
+        />
         {/* Brands Management */}
-        <Route 
-          path="/brands" 
+        <Route
+          path="/brands"
           element={
             <ProtectedRoute permissions={[PERMISSIONS.BRANDS.VIEW]}>
               <BrandsList />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/brands/create" 
+        <Route
+          path="/brands/create"
           element={
             <ProtectedRoute permissions={[PERMISSIONS.BRANDS.CREATE]}>
               <BrandForm />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/brands/:id" 
+        <Route
+          path="/brands/:id"
           element={
             <ProtectedRoute permissions={[PERMISSIONS.BRANDS.VIEW]}>
               <BrandDetails />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/brands/:id/edit" 
+        <Route
+          path="/brands/:id/edit"
           element={
             <ProtectedRoute permissions={[PERMISSIONS.BRANDS.EDIT]}>
               <BrandForm />
             </ProtectedRoute>
-          } 
+          }
         />
 
         {/* Categories Management */}
-        <Route 
-          path="/categories" 
+        <Route
+          path="/categories"
           element={
             <ProtectedRoute permissions={[PERMISSIONS.CATEGORIES.VIEW]}>
               <CategoryList />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/categories/create" 
+        <Route
+          path="/categories/create"
           element={
             <ProtectedRoute permissions={[PERMISSIONS.CATEGORIES.CREATE]}>
               <CategoryForm />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/categories/:id" 
+        <Route
+          path="/categories/:id"
           element={
             <ProtectedRoute permissions={[PERMISSIONS.CATEGORIES.VIEW]}>
               <CategoryDetail />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/categories/:id/edit" 
+        <Route
+          path="/categories/:id/edit"
           element={
             <ProtectedRoute permissions={[PERMISSIONS.CATEGORIES.EDIT]}>
               <CategoryForm />
-            </ProtectedRoute> 
-          } 
+            </ProtectedRoute>
+          }
         />
-
-        
-        
       </Route>
 
       {/* Fallback Routes */}

@@ -4,6 +4,7 @@ using TechGadgets.API.Attributes;
 using System.ComponentModel.DataAnnotations;
 using TechGadgets.API.Models.Common;
 using TechGadgets.API.Dtos.Products;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace TechGadgets.API.Controllers;
 
@@ -13,6 +14,7 @@ namespace TechGadgets.API.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
+[SwaggerTag("Gestión de imágenes de productos")]
 [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 [ProducesResponseType(StatusCodes.Status403Forbidden)]
 public class ProductosImagenController : ControllerBase

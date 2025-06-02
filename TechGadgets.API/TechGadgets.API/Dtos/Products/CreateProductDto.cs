@@ -47,9 +47,12 @@ namespace TechGadgets.API.Dtos.Products
         [StringLength(20, ErrorMessage = "El estado no puede exceder 20 caracteres")]
         public string? Estado { get; set; } = "disponible";
 
+        public bool Activo { get; set; } = true;
+
         public bool Destacado { get; set; } = false;
         public bool Nuevo { get; set; } = true;
         public bool EnOferta { get; set; } = false;
+        
 
         [Range(0.01, 1000, ErrorMessage = "El peso debe estar entre 0.01 y 1000 kg")]
         public decimal? Peso { get; set; }

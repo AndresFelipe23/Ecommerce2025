@@ -50,6 +50,17 @@ api.interceptors.request.use((config) => {
 });
 
 const brandsService = {
+  
+  async getAll(): Promise<BrandSummaryDto[]> {
+    try {
+      const response: AxiosResponse<ApiResponse<BrandSummaryDto[]>> = await api.get("/brands/all");
+      return response.data.data || [];
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiResponse<BrandSummaryDto[]>>;
+      throw new Error(axiosError.response?.data?.message || "Error al obtener todas las marcas");
+    }
+  },
+  
   async getBrands(filter: Partial<BrandFilterDto> = {}): Promise<PagedResult<BrandDto>> {
     const params = new URLSearchParams();
     Object.entries(filter).forEach(([key, value]) => {

@@ -9,5 +9,6 @@ namespace TechGadgets.API.Services.Interfaces
     {
         Task<string> GenerateSlugAsync(string input, string tableName, int? excludeId = null);
         string GenerateSlug(string input);
+        Task<string> GenerateUniqueSlugAsync(string baseSlug, Func<string, Task<bool>> existsFunc);
     }
 }

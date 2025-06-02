@@ -187,3 +187,16 @@ C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.A
 C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API\bin\Debug\net8.0\Serilog.Formatting.Compact.dll
 C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API\bin\Debug\net8.0\Serilog.Settings.Configuration.dll
 C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API\bin\Debug\net8.0\Serilog.Sinks.Debug.dll
+C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API\bin\Debug\net8.0\Microsoft.IO.RecyclableMemoryStream.dll
+C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API\bin\Debug\net8.0\MimeMapping.dll
+C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API\bin\Debug\net8.0\SixLabors.ImageSharp.dll
+C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API\bin\Debug\net8.0\SixLabors.ImageSharp.Web.dll
+C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API\bin\Debug\net8.0\Supabase.dll
+C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API\bin\Debug\net8.0\Supabase.Core.dll
+C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API\bin\Debug\net8.0\Supabase.Functions.dll
+C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API\bin\Debug\net8.0\Supabase.Gotrue.dll
+C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API\bin\Debug\net8.0\Supabase.Postgrest.dll
+C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API\bin\Debug\net8.0\Supabase.Realtime.dll
+C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API\bin\Debug\net8.0\Supabase.Storage.dll
+C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API\bin\Debug\net8.0\System.Reactive.dll
+C:\Users\57315\Documents\AndresEspitia\TechGadgets\TechGadgets.API\TechGadgets.API\bin\Debug\net8.0\Websocket.Client.dll

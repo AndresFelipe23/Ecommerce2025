@@ -44,20 +44,30 @@ export interface ProductDto {
     StockActual: number;
     StockReservado: number;
   }
+
+  export interface ProductSearchResponse {
+    productos: ProductSummaryDto[];
+    totalResultados: number;
+    pagina: number;
+    totalPaginas: number;
+    filtrosDisponibles: ProductSearchFiltersDto;
+  }
+  
   
   export interface ProductSummaryDto {
-    Id: number;
-    Nombre: string;
-    Slug: string;
-    Precio: number;
-    PrecioOferta?: number;
-    ImagenPrincipal?: string;
-    Activo: boolean;
-    Destacado: boolean;
-    Stock: number;
-    MarcaNombre: string;
-    CategoriaNombre: string;
+    id: number;
+    nombre: string;
+    slug: string;
+    precio: number;
+    precioOferta?: number;
+    imagenPrincipal?: string;
+    activo: boolean;
+    destacado: boolean;
+    stock: number;
+    marcaNombre: string;
+    categoriaNombre: string;
   }
+  
   
   export interface ProductImageDto {
     Id: number;

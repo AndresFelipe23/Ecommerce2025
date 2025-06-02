@@ -44,6 +44,17 @@ api.interceptors.request.use((config) => {
 
 // Service
 const categoriesService = {
+
+  async getAll(): Promise<CategorySummaryDto[]> {
+    try {
+      const response: AxiosResponse<ApiResponse<CategorySummaryDto[]>> = await api.get("/categories/all");
+      return response.data.data || [];
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiResponse<CategorySummaryDto[]>>;
+      throw new Error(axiosError.response?.data?.message || "Error al obtener todas las categorías");
+    }
+  },
+
   async getCategories(filter: Partial<CategoryFilterDto> = {}): Promise<PagedResult<CategoryDto>> {
     const params = new URLSearchParams();
     Object.entries(filter).forEach(([key, value]) => {

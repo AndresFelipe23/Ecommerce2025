@@ -1,3 +1,4 @@
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,9 @@ namespace TechGadgets.API.Services.Interfaces
         Task<ProductDto?> GetProductByIdAsync(int id);
         Task<ProductDto?> GetProductBySlugAsync(string slug);
         Task<ProductDto> CreateProductAsync(CreateProductDto dto);
-        Task<ProductDto?> UpdateProductAsync(int id, UpdateProductDto dto);
+        Task<ProductDto> UpdateProductAsync(int id, UpdateProductDto dto);
+        Task<ProductImageDto> AddProductImageAsync(int productId, CreateProductImageDto imageDto);
+        Task<List<ProductImageDto>> AddMultipleProductImagesAsync(int productId, List<CreateProductImageDto> imageDtos);
         Task<bool> DeleteProductAsync(int id);
         #endregion
 
@@ -27,6 +30,8 @@ namespace TechGadgets.API.Services.Interfaces
         Task<IEnumerable<ProductSummaryDto>> GetProductsByBrandAsync(int brandId, int count = 12);
         Task<IEnumerable<ProductSummaryDto>> GetNewestProductsAsync(int count = 8);
         Task<IEnumerable<ProductSummaryDto>> GetActiveProductsAsync();
+        Task<bool> UpdateImageOrderAsync(int productId, List<UpdateImageOrderDto> imageOrders);
+        Task<bool> SetMainImageAsync(int productId, int imageId);
         Task<ProductSearchFiltersDto> GetAvailableFiltersAsync(ProductFilterDto? currentFilter = null);
         #endregion
 
@@ -55,22 +60,17 @@ namespace TechGadgets.API.Services.Interfaces
         Task<IEnumerable<ProductSummaryDto>> GetBestSellingProductsAsync(int count = 10);
         #endregion
 
-        #region Gestión de Imágenes (Delegada a ProductosImagenService)
-        // Métodos básicos de imágenes que necesita el ProductService
-        // pero que internamente usan ProductosImagenService
+        #region Gestión de Imágenes
         Task<bool> ProductHasImagesAsync(int productId);
         Task<string?> GetProductMainImageUrlAsync(int productId);
         Task<IEnumerable<ProductImageDto>> GetProductImagesAsync(int productId);
         Task<bool> DeleteProductImageAsync(int productId, int imageId);
         Task<ProductImageDto?> GetProductImageAsync(int productId, int imageId);
         Task<bool> ReorderProductImagesAsync(int productId);
-
-
         #endregion
 
         #region Debug y Utilidades
         Task<object> GetProductDebugInfoAsync(int id);
         #endregion
-
     }
 }
